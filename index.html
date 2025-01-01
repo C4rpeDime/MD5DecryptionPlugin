@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>MD5解密</title>
+    <link href="https://cdn.staticfile.net/twitter-bootstrap/4.6.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+        }
+        #resultSection {
+            display: none;
+        }
+        footer {
+            background-color: #343a40;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">MD5 解密服务</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">主页 <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">关于</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">联系</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <div class="container mt-5">
+        <h1 class="mb-4">MD5解密</h1>
+        <div class="form-group">
+            <label for="md5Input">输入 MD5 值</label>
+            <input type="text" class="form-control" id="md5Input" placeholder="请输入 MD5 值">
+        </div>
+        <button id="decryptBtn" class="btn btn-primary">解密</button>
+        <div id="resultSection" class="mt-4">
+            <h3>解密结果：</h3>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>平台名</th>
+                        <th>MD5值</th>
+                        <th>解密结果</th>
+                    </tr>
+                </thead>
+                <tbody id="resultTable">
+                    <!-- 解密结果将插入到这里 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer>
+        <p>&copy; 2025 MD5 解密服务. 保留所有权利.</p>
+    </footer>
+
+    <script src="https://cdn.staticfile.net/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.net/twitter-bootstrap/4.6.1/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('decryptBtn').addEventListener('click', function() {
+            const md5Value = document.getElementById('md5Input').value;
+            const platforms = [
+                { name: '棉花糖', param: 'md5' },
+                { name: 'T007', param: 'type=1&txtInput' },
+                { name: 'MD5.li', param: 'md5li=1&hash' },
+                { name: 'My-Addr', param: 'myaddr=1&hash' }
+            ];
+
+            // 清除旧结果
+            document.getElementById('resultTable').innerHTML = '';
+            document.getElementById('resultSection').style.display = 'none';
+
+            platforms.forEach(platform => {
+                fetch("proxy.php", {
+                    headers: {
+                        "accept": "application/json, text/javascript, */*; q=0.01",
+                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+                    },
+                    body: `${platform.param}=${md5Value}`,
+                    method: "POST"
+                })
+                .then(response => response.json())
+                .then(data => {
+                    let result;
+                    if (data.result) {
+                        result = data.result;
+                    } else if (data.error && data.link) {
+                        result = `需要1积分查看，请访问 <a href="${data.link}" target="_blank">md5.li</a>`;
+                    } else {
+                        result = '很遗憾，没有解密成功';
+                    }
+                    const row = `<tr><td>${platform.name}</td><td>${md5Value}</td><td>${result}</td></tr>`;
+                    document.getElementById('resultTable').insertAdjacentHTML('beforeend', row);
+                    document.getElementById('resultSection').style.display = 'block'; // 显示结果
+                })
+                .catch(error => {
+                    const row = `<tr><td>${platform.name}</td><td>${md5Value}</td><td>错误: ${error}</td></tr>`;
+                    document.getElementById('resultTable').insertAdjacentHTML('beforeend', row);
+                    document.getElementById('resultSection').style.display = 'block'; // 显示结果
+                });
+            });
+        });
+    </script>
+</body>
+</html>
